@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/GradientView.iml" filepath="$PROJECT_DIR$/GradientView.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sample/app.iml" filepath="$PROJECT_DIR$/sample/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sample/sample.iml" filepath="$PROJECT_DIR$/sample/sample.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-window-gradient-view.iml" filepath="$PROJECT_DIR$/.idea/modules/android-window-gradient-view.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/android-window-gradient-view.buildSrc.iml" filepath="$PROJECT_DIR$/.idea/modules/android-window-gradient-view.buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/library/android-window-gradient-view.library.iml" filepath="$PROJECT_DIR$/.idea/modules/library/android-window-gradient-view.library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sample/android-window-gradient-view.sample.iml" filepath="$PROJECT_DIR$/.idea/modules/sample/android-window-gradient-view.sample.iml" />
     </modules>
   </component>
 </project>

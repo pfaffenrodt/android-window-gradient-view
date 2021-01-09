@@ -1,4 +1,12 @@
-package de.pfaffenrodt.gradientwindowoverlay;
+package de.pfaffenrodt.gradientwindowoverlay
+
+import android.app.Activity
+import android.content.Context
+import android.graphics.*
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.Gravity
+import android.view.View
 
 /**
  * Copyright 2016 Dimitri Pfaffenrodt
@@ -14,185 +22,158 @@ package de.pfaffenrodt.gradientwindowoverlay;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.LinearGradient;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.Gravity;
-import android.view.View;
-import android.view.Window;
-
 /**
  * Use this view above your views.
  * To achieve an fade in/out effect with your WindowBackground.
  */
-public class GradientWindowOverlayView extends View {
+class GradientWindowOverlayView : View {
+    private val viewLocation = IntArray(2)
+    private val gradientClipBounds = Rect()
+    private val paint = Paint()
+    private var bitmap: Bitmap? = null
+    private var gradientCanvas: Canvas? = null
+    private var gravity = Gravity.TOP
+    private var isDrawnOverlay = false
 
-    private int[] viewLocation = new int[2];
-    private final Rect clipBounds =new Rect();
-
-    private final Paint paint=new Paint();
-    private Bitmap bitmap;
-    private Canvas gradientCanvas;
-
-    private int gravity = Gravity.TOP;
-
-    private boolean isDrawnOverlay;
-
-    public GradientWindowOverlayView(Context context) {
-        super(context);
-        init(context,null);
+    constructor(context: Context) : super(context) {
+        init(context, null)
     }
 
-    public GradientWindowOverlayView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init(context, attrs)
     }
 
-    public GradientWindowOverlayView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context, attrs);
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init(context, attrs)
     }
 
-    private void init(Context context, AttributeSet attrs){
-        readAttributes(context, attrs);
-        initPaint();
+    private fun init(context: Context, attrs: AttributeSet?) {
+        readAttributes(context, attrs)
+        initPaint()
     }
 
-    private void readAttributes(Context context, AttributeSet attrs) {
-        if(attrs!=null){
-            TypedArray a = context.getTheme().obtainStyledAttributes(
+    private fun readAttributes(context: Context, attrs: AttributeSet?) {
+        if (attrs != null) {
+            val a = context.theme.obtainStyledAttributes(
                     attrs,
                     R.styleable.GradientWindowOverlayView,
-                    0, 0);
-
-            try {
-                gravity = a.getInteger(R.styleable.GradientWindowOverlayView_android_gravity, Gravity.TOP);
+                    0, 0)
+            gravity = try {
+                a.getInteger(R.styleable.GradientWindowOverlayView_android_gravity, Gravity.TOP)
             } finally {
-                a.recycle();
+                a.recycle()
             }
         }
     }
 
-    private void initPaint() {
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+    private fun initPaint() {
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        Drawable windowBackground=getWindowBackground();
-        if(windowBackground==null){
-            /**
-             * nothing to draw
-             */
-            return;
-        }
-
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val windowBackground = windowBackground ?: return // nothing to draw
         /**
          * make sure view is clipped to bounds.
          */
-        canvas.getClipBounds(clipBounds);
-
-        if(gradientCanvas !=null && !isDrawnOverlay) {
-            isDrawnOverlay =true;//not draw again
-            gradientCanvas.save();
-            getLocationInWindow(viewLocation);
+        canvas.getClipBounds(gradientClipBounds)
+        val gradientCanvas = gradientCanvas
+        if (gradientCanvas != null && !isDrawnOverlay) {
+            isDrawnOverlay = true //not draw again
+            gradientCanvas.save()
+            getLocationInWindow(viewLocation)
             /**
              * move canvas to window position.
              */
-            gradientCanvas.translate(-viewLocation[0], -viewLocation[1]);
+            gradientCanvas.translate((-viewLocation[0]).toFloat(), (-viewLocation[1]).toFloat())
             /**
              * draw window background in to bitmap
              */
-            windowBackground.draw(gradientCanvas);
-            gradientCanvas.restore();
+            windowBackground.draw(gradientCanvas)
+            gradientCanvas.restore()
             /**
              * clip gradient effect with Xfermode
-             * @see #initPaint()
-             * @see #getGradientShader(int, int)
+             * @see .initPaint
+             * @see .getGradientShader
              */
-            gradientCanvas.drawRect(clipBounds, paint);
+            gradientCanvas.drawRect(gradientClipBounds, paint)
         }
-        if(bitmap!=null) {
+        if (bitmap != null) {
             /**
              * finally draw window background with gradient effect
              */
-            canvas.drawBitmap(bitmap, clipBounds, clipBounds, null);
-        }
-
-    }
-
-    private Drawable getWindowBackground(){
-        if(getContext() instanceof Activity){
-            Window window = ((Activity) getContext()).getWindow();
-            View decorView = window.getDecorView();
-            return decorView.getBackground();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        if(w*h!=oldw*h||bitmap==null){
-            releaseResources();
-            bitmap=Bitmap.createBitmap(w,h, Bitmap.Config.ARGB_8888);
-            gradientCanvas = new Canvas(bitmap);
-            LinearGradient shader = getGradientShader(w, h);
-            paint.setShader(shader);
-            isDrawnOverlay =false;
+            canvas.drawBitmap(bitmap!!, gradientClipBounds, gradientClipBounds, null)
         }
     }
 
-    private LinearGradient getGradientShader(int w, int h) {
-        float x0=0,y0=0,x1=0,y1=h;
-        int color1 = Color.BLACK;
-        int color2 = Color.TRANSPARENT;
-        switch (gravity){
-            case Gravity.START:
-            case Gravity.LEFT:
-                x1=w;
-                y1=0;
-            case Gravity.TOP:
-                color1 = Color.BLACK;
-                color2 = Color.TRANSPARENT;
-                break;
-            case Gravity.END:
-            case Gravity.RIGHT:
-                x1=w;
-                y1=0;
-            case Gravity.BOTTOM:
-                color1 = Color.TRANSPARENT;
-                color2 = Color.BLACK;
-                break;
+    private val windowBackground: Drawable?
+        get() {
+            if (context is Activity) {
+                val window = (context as Activity).window
+                val decorView = window.decorView
+                return decorView.background
+            }
+            return null
         }
-        return new LinearGradient(x0,y0,x1,y1,color1,color2, Shader.TileMode.CLAMP);
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        var bitmap = bitmap
+        if (w * h != oldw * h || bitmap == null) {
+            releaseResources()
+            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            this.bitmap = bitmap
+            gradientCanvas = Canvas(bitmap)
+            val shader = getGradientShader(w, h)
+            paint.shader = shader
+            isDrawnOverlay = false
+        }
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        releaseResources();
+    private fun getGradientShader(w: Int, h: Int): LinearGradient {
+        val x0 = 0f
+        val y0 = 0f
+        var x1 = 0f
+        var y1 = h.toFloat()
+        var color1 = Color.BLACK
+        var color2 = Color.TRANSPARENT
+        when (gravity) {
+            Gravity.START, Gravity.LEFT -> {
+                x1 = w.toFloat()
+                y1 = 0f
+                color1 = Color.BLACK
+                color2 = Color.TRANSPARENT
+            }
+            Gravity.TOP -> {
+                color1 = Color.BLACK
+                color2 = Color.TRANSPARENT
+            }
+            Gravity.END, Gravity.RIGHT -> {
+                x1 = w.toFloat()
+                y1 = 0f
+                color1 = Color.TRANSPARENT
+                color2 = Color.BLACK
+            }
+            Gravity.BOTTOM -> {
+                color1 = Color.TRANSPARENT
+                color2 = Color.BLACK
+            }
+        }
+        return LinearGradient(x0, y0, x1, y1, color1, color2, Shader.TileMode.CLAMP)
     }
 
-    private void releaseResources() {
-        gradientCanvas=null;
-        if(bitmap!=null && !bitmap.isRecycled()){
-            bitmap.recycle();
-            bitmap=null;
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        releaseResources()
+    }
+
+    private fun releaseResources() {
+        gradientCanvas = null
+        val bitmap = bitmap
+        if (bitmap != null && !bitmap.isRecycled) {
+            bitmap.recycle()
+            this.bitmap = null
         }
-        isDrawnOverlay =false;
+        isDrawnOverlay = false
     }
 }
