@@ -26,33 +26,25 @@ import android.view.View
  * Use this view above your views.
  * To achieve an fade in/out effect with your WindowBackground.
  */
-class GradientWindowOverlayView : View {
+class GradientWindowOverlayView
+@JvmOverloads constructor(
+        context: Context,
+        attrs: AttributeSet? = null,
+        defStyleAttr: Int = 0,
+) : View(context, attrs, defStyleAttr) {
     private val viewLocation = IntArray(2)
     private val gradientClipBounds = Rect()
-    private val paint = Paint()
+    private val paint by lazy {
+        val paint = Paint()
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+        paint
+    }
     private var bitmap: Bitmap? = null
     private var gradientCanvas: Canvas? = null
     private var gravity = Gravity.TOP
     private var isDrawnOverlay = false
 
-    constructor(context: Context) : super(context) {
-        init(context, null)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        init(context, attrs)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init(context, attrs)
-    }
-
-    private fun init(context: Context, attrs: AttributeSet?) {
-        readAttributes(context, attrs)
-        initPaint()
-    }
-
-    private fun readAttributes(context: Context, attrs: AttributeSet?) {
+    init {
         if (attrs != null) {
             val a = context.theme.obtainStyledAttributes(
                     attrs,
@@ -64,10 +56,6 @@ class GradientWindowOverlayView : View {
                 a.recycle()
             }
         }
-    }
-
-    private fun initPaint() {
-        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -124,42 +112,10 @@ class GradientWindowOverlayView : View {
             bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
             this.bitmap = bitmap
             gradientCanvas = Canvas(bitmap)
-            val shader = getGradientShader(w, h)
+            val shader = gradientShader(w, h, gravity)
             paint.shader = shader
             isDrawnOverlay = false
         }
-    }
-
-    private fun getGradientShader(w: Int, h: Int): LinearGradient {
-        val x0 = 0f
-        val y0 = 0f
-        var x1 = 0f
-        var y1 = h.toFloat()
-        var color1 = Color.BLACK
-        var color2 = Color.TRANSPARENT
-        when (gravity) {
-            Gravity.START, Gravity.LEFT -> {
-                x1 = w.toFloat()
-                y1 = 0f
-                color1 = Color.BLACK
-                color2 = Color.TRANSPARENT
-            }
-            Gravity.TOP -> {
-                color1 = Color.BLACK
-                color2 = Color.TRANSPARENT
-            }
-            Gravity.END, Gravity.RIGHT -> {
-                x1 = w.toFloat()
-                y1 = 0f
-                color1 = Color.TRANSPARENT
-                color2 = Color.BLACK
-            }
-            Gravity.BOTTOM -> {
-                color1 = Color.TRANSPARENT
-                color2 = Color.BLACK
-            }
-        }
-        return LinearGradient(x0, y0, x1, y1, color1, color2, Shader.TileMode.CLAMP)
     }
 
     override fun onDetachedFromWindow() {

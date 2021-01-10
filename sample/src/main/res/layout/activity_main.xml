@@ -3,24 +3,51 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="de.pfaffenrodt.gradientview.MainActivity">
 
-    <ScrollView
+    <de.pfaffenrodt.gradientwindowoverlay.FadeoutLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <TextView
+        android:layout_height="match_parent"
+        android:id="@+id/fade_layout"
+        app:fadeTop="@dimen/gradient_size"
+        app:fadeBottom="@dimen/gradient_size"
+        app:fadeRight="@dimen/gradient_size"
+        app:fadeLeft="@dimen/gradient_size"
+        >
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/activity_vertical_margin"
+                android:textColor="#000"
+                android:text="@string/lorem_ipsum" />
+        </ScrollView>
+    </de.pfaffenrodt.gradientwindowoverlay.FadeoutLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_centerInParent="true">
+
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="@dimen/activity_vertical_margin"
-            android:text="@string/lorem_ipsum" />
-    </ScrollView>
-
-    <de.pfaffenrodt.gradientwindowoverlay.GradientWindowOverlayView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/gradient_size" />
-    <de.pfaffenrodt.gradientwindowoverlay.GradientWindowOverlayView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/gradient_size"
-        android:layout_alignParentBottom="true"
-        android:gravity="bottom" />
+            android:text="-"
+            android:onClick="decrease"
+            />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+"
+            android:onClick="increase" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="play"
+            android:onClick="play" />
+    </LinearLayout>
 </RelativeLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FadeoutLayout">
+        <attr name="fadeTop" format="dimension" />
+        <attr name="fadeBottom" format="dimension" />
+        <attr name="fadeLeft" format="dimension" />
+        <attr name="fadeRight" format="dimension" />
+    </declare-styleable>
+</resources>
